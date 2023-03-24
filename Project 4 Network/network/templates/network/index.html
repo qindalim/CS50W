@@ -1,0 +1,270 @@
+{% extends "network/layout.html" %} 
+
+{% load static %}
+
+{% block body %}
+
+<div style="margin-left: 20px; margin-right: 20px;">
+  <h2>All Posts</h2>
+  <div style="border: 1px solid lightgrey; border-radius: 5px; padding: 10px;">
+    <h3>New Post</h3>
+    <textarea id="add-text" rows="3" cols="157"></textarea>
+    <button type="submit" id="addButton">Post</button>
+  </div>
+</div>
+
+<hr>
+
+<!-- Posts -->
+<div id="newPost"></div>
+
+{% for post in posts %}
+  <div style="margin-left: 20px;">
+      <h5><a href="{% url 'profile' post.user.username%}" style="color: black;">{{post.user.username}}</a></h5>
+      <div>
+        {%if request.user == post.user%}
+          <span class="text-primary edit" data-id="{{post.id}}" id="edit-btn-{{post.id}}">Edit</span>
+        {%endif%}
+      </div>
+
+      <span id="post-content-{{post.id}}" class="post" >{{post.post}}</span>
+      <textarea data-id="{{post.id}}" id="post-edit-{{post.id}}" style="display:none;" class="form-control textarea" row="3">{{post.post}}</textarea>
+      
+      <br>
+      
+      <span style="color: grey;">{{post.datetime}}</span>
+      
+      <br>
+      <div>
+        <img
+        data-id="{{post.id}}" id="post-like-{{post.id}}" class="liked" style="width: 30px;"
+        {% if not request.user in post.like.all %}
+          data-liked="no"
+          src="https://www.seekpng.com/png/detail/55-552216_how-to-set-use-white-heart-with-black.png"
+        {%else%}
+          data-liked="yes"
+          src="https://www.pikpng.com/pngl/m/382-3823370_heart-icon-transparent-background-heart-png-clipart.png"
+        {%endif%}
+        />
+        <span id="post-count-{{post.id}}">{{post.like.count}}</span>
+      </div>
+
+      <hr>
+  </div>
+{%endfor%}
+
+<!-- Pagination -->
+<div>
+  <nav>
+    <ul class="pagination">
+      {% if posts.has_previous %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{posts.previous_page_number}}">
+          <span aria-hidden="true">&laquo;</span>
+          <span class="sr-only">Previous</span>
+          </a>
+        </li>
+      {%else%}
+        <li class="page-item disabled">
+          <a class="page-link" href="#">
+          <span aria-hidden="true">&laquo;</span>
+          <span class="sr-only">Previous</span>
+          </a>
+        </li>
+      {%endif%}
+
+      {% if posts.has_next %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{posts.next_page_number}}">
+          <span aria-hidden="true">&raquo;</span>
+          <span class="sr-only">Next</span>
+          </a>
+        </li>
+      {%else%}
+        <li class="page-item disabled">
+          <a class="page-link" href="#">
+          <span aria-hidden="true">&raquo;</span>
+          <span class="sr-only">Next</span>
+          </a>
+        </li>
+      {%endif%}
+    </ul>
+  </nav>
+</div>
+
+{% endblock %}
+
+{% block script %} 
+<script>
+  edit = document.querySelectorAll(".edit");
+  like = document.querySelectorAll(".liked");
+  addButton = document.getElementById("addButton");
+  newPost = document.getElementById("newPost");
+  addText = document.getElementById("add-text");
+  addButton.addEventListener("click", () => {
+  text = addText.value;
+
+  edit.forEach((element) => {
+      element.addEventListener("click", () => {
+          edit_fn(element);
+      });
+  });
+  
+  like.forEach((element) => {
+      like_fn(element);
+  });
+
+  if (text.length != 0) {
+    form = new FormData();
+    form.append("post", text.trim());
+    fetch("/post/add", {
+    method: "POST",
+    body: form,
+    })
+    .then((result) => result.json())
+    .then((result) => {
+      if (result.status == 201) {
+        add_post(
+          text.trim(),
+          result.datetime,
+          `/user/${result.username}`,
+          result.post_id,
+          result.username
+        );
+        addText.value = "";
+      }
+    });
+  }
+  });
+  
+  function add_post(post, time, link, id, username) {
+    div1 = document.createElement("div");
+    div1.style.marginLeft = "20px";
+    post_name = document.createElement("h5");
+    a = document.createElement("a");
+    a.setAttribute("href", link);
+    a.textContent = username;
+    a.style.color = "black";
+
+    div2 = document.createElement("div");
+    span1 = document.createElement("span");
+    span1.textContent = "Edit";
+    span1.setAttribute("class", "text-primary edit");
+    span1.setAttribute("data-id", id);
+    span1.setAttribute("id", `edit-btn-${id}`);
+    span1.addEventListener("click", () => {
+        edit_fn(span1);
+    });
+
+    span2 = document.createElement("span");
+    span2.textContent = post;
+    span2.setAttribute("class", "post");
+    span2.setAttribute("id", `post-content-${id}`);
+    
+    textArea = document.createElement("textarea");
+    textArea.textContent = post;
+    textArea.setAttribute("class", "form-control textarea");
+    textArea.setAttribute("id", `post-edit-${id}`);
+    textArea.setAttribute("data-id", id);
+    textArea.setAttribute("style", "display:none;");
+    
+    div3 = document.createElement("div");
+    span3 = document.createElement("span");
+    span3.style.color = "grey";
+    span3.textContent = time;
+
+    div4 = document.createElement("div");
+    img = document.createElement("img");
+    img.setAttribute("src", "https://www.seekpng.com/png/detail/55-552216_how-to-set-use-white-heart-with-black.png");
+    img.style.width = "30px";    
+    img.setAttribute("class", "liked");
+    img.setAttribute("data-id", id);
+    img.setAttribute("id", `post-like-${id}`);
+    img.setAttribute("data-liked", "no");
+    like_fn(img);
+
+    span4 = document.createElement("span");
+    span4.setAttribute("id", `post-count-${id}`);
+    span4.textContent = "0";
+
+    br = document.createElement("br");
+    hr = document.createElement("hr");
+
+    div2.append(span1);
+    div3.append(span3)
+    div4.append(img);
+    div4.append(span4);
+    post_name.append(a);
+    div1.append(post_name);
+    div1.append(div2);
+    div1.append(span2);
+    div1.append(textArea);
+    div1.append(br);
+    div1.append(div3);
+    div1.append(div4);
+    div1.append(hr);
+    newPost.append(div1);
+  }
+
+  function like_fn(element) {
+    element.addEventListener("click", () => {
+      id = element.getAttribute("data-id");
+      liked = element.getAttribute("data-liked");
+      post_like = document.getElementById(`post-like-${id}`);
+      post_count = document.getElementById(`post-count-${id}`);
+
+      form = new FormData();
+      form.append("id", id);
+      form.append("liked", liked);
+
+      fetch("/like", {
+          method: "POST",
+          body: form,
+      })
+      .then((result) => result.json())
+      .then((result) => {
+        if (result.status == 201) {
+          if (result.liked === "yes") {
+            post_like.src = "https://www.pikpng.com/pngl/m/382-3823370_heart-icon-transparent-background-heart-png-clipart.png";
+            element.setAttribute("data-liked", "yes");
+          } else {
+            post_like.src = "https://www.seekpng.com/png/detail/55-552216_how-to-set-use-white-heart-with-black.png";
+            element.setAttribute("data-liked", "no");
+          }
+          post_count.textContent = result.likes;
+        }
+      })
+    });
+  }
+
+  function edit_fn(element) {
+    id = element.getAttribute("data-id");
+    editButton = document.getElementById(`edit-btn-${id}`);
+    if (editButton.textContent == "Edit") {
+      document.getElementById(`post-content-${id}`).style.display = "none";
+      document.getElementById(`post-edit-${id}`).style.display = "block";
+      editButton.textContent = "Confirm changes";
+    } else if (editButton.textContent == "Confirm changes") {
+      edit_post(id, document.getElementById(`post-edit-${id}`).value);
+      editButton.textContent = "Edit";
+      editButton.setAttribute("class", "text-primary edit");
+    }
+  }
+
+  function edit_post(id, post) {
+    form = new FormData();
+    form.append("id", id);
+    form.append("post", post.trim());
+
+    fetch("/post/edit", {
+      method: "POST",
+      body: form,
+    }).then((result) => {
+      document.getElementById(`post-content-${id}`).textContent = post;
+      document.getElementById(`post-content-${id}`).style.display = "block";
+      document.getElementById(`post-edit-${id}`).value = post.trim();
+      document.getElementById(`post-edit-${id}`).style.display = "none";
+    });
+  }
+</script> 
+{% endblock %}

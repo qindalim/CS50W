@@ -1,0 +1,155 @@
+{% extends "crypto/layout.html" %} 
+
+{% load static %}
+
+{% block body %}
+
+<h1>Earnings</h1>    
+
+<table id="table" class="auto-index">
+    <tr>  
+      <th>ID</th>
+      <th>Coin</th>
+      <th>Ticker</th>
+      <th>Buy Price</th>
+      <th>Buy Quantity</th>
+      <th>Current Price</th>
+      <th>Rounded Profit/Loss</th>
+      <th>Options</th>
+    </tr>
+    {% for coin in coins %}
+      {% if request.user == coin.user %}
+        <tr>
+          <th>{{ coin.id }}</th>
+          <th>{{ coin.name }}</th>
+          <th id="ticker">{{ coin.ticker }}</th>
+          <th id="buy_price">{{ coin.buy_price }}</th>
+          <th id="buy_quantity">{{ coin.buy_quantity }}</th>
+          <th class="currentPrice" data-id="{{coin.id}}" data-ticker="{{coin.ticker}}">Fetching current price...</th>
+          <th class="profit" data-id="{{coin.id}}" data-buy-quantity="{{coin.buy_quantity}}" data-buy-price="{{coin.buy_price}}">Calculating profit...</th>
+          <th><button class="delete" id="deleteButton-{{coin.id}}" data-id="{{coin.id}}">Delete</button></th>
+        </tr>
+      {% endif %}
+    {% endfor %}
+</table>
+
+<h2 id="totalProfit">Calculating Total Profit...</h2> 
+
+{% endblock %}
+
+{% block script %} 
+
+<script>
+// Delete Function
+deleteAll = document.querySelectorAll(".delete");
+deleteAll.forEach((element) => {
+  element.addEventListener("click", () => {
+    delete_fn(element);
+  })
+});
+
+function delete_fn(element) {
+  id = element.getAttribute("data-id")
+
+  let confirmation = confirm("are you sure you want to remove the item?");
+  if (confirmation) {
+    fetch(`/delete/${id}`)
+  };
+
+  window.location.reload();
+} 
+
+// Load Prices
+currentPriceAll = document.querySelectorAll(".currentPrice");
+profitAll = document.querySelectorAll(".profit");
+totalProfitMain = document.getElementById("totalProfit");
+allPrices = {}
+allProfit = {}
+totalProfit = 0
+
+currentPriceAll.forEach(async (element) => {
+  let coin_id = element.getAttribute("data-id")
+  let ticker = element.getAttribute("data-ticker")
+  let binance = new ccxt.binance()
+  let x = await binance.fetch_ohlcv(ticker, "5m")
+  element.innerHTML = "$" + x[499][4]
+  allPrices[coin_id] = x[499][4]
+})
+
+profitAll.forEach((element) => {
+    setTimeout(function() {
+      let coin_id = element.getAttribute("data-id")
+      let buy_quantity = element.getAttribute("data-buy-quantity")
+      let buy_price = element.getAttribute("data-buy-price")
+      let y = Math.round(buy_quantity * (-parseFloat(buy_price) + parseFloat(allPrices[coin_id])))
+      element.innerHTML = "$" + y
+      if (y >= 0) {
+          element.style.color = "green"
+      } else {
+          element.style.color = "red"
+      }
+      allProfit[coin_id] = y
+    }, 2000)
+  })
+
+setTimeout(function() {
+  const sumValues = obj => Object.values(obj).reduce((a, b) => a + b);
+  totalProfit = sumValues(allProfit)
+  console.log(totalProfit)
+  totalProfitMain.innerHTML = "Total Profit: $" + Math.round(totalProfit)
+  if (totalProfit >= 0) {
+    totalProfitMain.style.color = "green"
+  } else {
+    totalProfitMain.style.color = "red"
+  }
+}, 2000)
+</script>
+
+{% endblock %}
+
+{% block css %}
+
+<style scoped>
+.formli {
+display: inline-block;
+text-align: right;
+}
+
+form {
+  text-align: center;
+  align-items: center;
+  margin: auto;
+}
+
+input {
+  margin-left: 10px;
+}
+
+input:hover {
+  box-shadow: 3px 3px lightgreen;
+  border-radius: 2px
+}
+
+.save {
+text-align: center ;
+}
+
+table {
+  font-family: arial, sans-serif;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+th, td {
+  border: 1px solid #dddddd;
+  text-align: center;
+  padding: 8px;
+}
+
+.bwt {
+    color:rgb(243, 236, 236);
+    background-color: rgb(255, 94, 0);
+}
+</style>
+
+{% endblock %}

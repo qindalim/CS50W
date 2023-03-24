@@ -1,0 +1,224 @@
+.googlesearchdiv {
+    text-align: center;
+    display: flex;
+    height: 500px;
+    position: relative;
+}
+  
+.googlelogomain {
+    display: flex;
+    width: 25%;
+    position: absolute;
+    top: 150px;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.googlesearch {
+    position: absolute;
+    top: 300px;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.rcorners {
+    background: #fff;
+    display: flex;
+    border-radius: 24px;
+    box-shadow: none;
+    border: 1px solid #dfe1e5;
+    padding: 20px;
+    width: 482px;
+    height: 4px;
+    outline: none;
+}
+
+.searchbutton {
+    background-color: #f8f9fa;
+    border: 1px solid #f8f9fa;
+    border-radius: 4px;
+    color: #3c4043;
+    font-family: arial,sans-serif;
+    font-size: 14px;
+    margin: 11px 4px;
+    padding: 0 16px;
+    line-height: 27px;
+    height: 36px;
+    min-width: 54px;
+    text-align: center;
+    cursor: pointer;
+    user-select: none;
+}
+
+.topright {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 15px;
+    font-family: Arial, Helvetica, sans-serif;
+    text-align: right;
+}
+
+a:link {
+    text-decoration: none;
+}
+  
+a:visited {
+    text-decoration: none;
+}
+  
+a:hover {
+    text-decoration: underline;
+}
+  
+a:active {
+    text-decoration: underline;
+}
+
+.topleftlogo {
+    display: flex;
+    position: absolute;
+    top: 25px;
+    left: 25px;
+    width: 6%;
+}
+
+.advancedsearch {
+    display: flex;
+    position: absolute;
+    top: 200px;
+    left: 45px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 13px;
+}
+
+.asheading {
+    display: flex;
+    position: absolute;
+    top: 80px;
+    left: 45px;
+    color: #d93025;
+    font-size: 20px;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.line {
+    display: flex;
+    margin-top: 125px;
+    border: 1px solid #ebebeb;
+}
+
+.asheading2 {
+    display: flex;
+    position: absolute;
+    top: 150px;
+    left: 45px;
+    font-size: 15px;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.asheading3 {
+    display: flex;
+    position: absolute;
+    top: 150px;
+    left: 800px;
+    font-size: 13px;
+    font-family: Arial, Helvetica, sans-serif;
+    color: #777;
+}
+
+.asinputbox {
+    display: flex;
+    position: absolute;
+    left: 200px;
+    width: 550px;
+    height: 25px;
+    transform: translate(0px, -22.5px);
+}
+
+.asinputbox1 {
+    display: flex;
+    position: absolute;
+    left: 200px;
+    width: 250px;
+    height: 25px;
+    transform: translate(0px, -22.5px);
+}
+
+.asinputbox2 {
+    display: flex;
+    position: absolute;
+    left: 500px;
+    width: 250px;
+    height: 25px;
+    transform: translate(0px, -22.5px);
+}
+
+.toposition {
+    display: flex;
+    position: absolute;
+    left: 472.5px;
+    top: 185px;
+}
+
+.asguide {
+    position: absolute;
+    top: -10px;
+    left: 775px;
+    white-space: nowrap;
+    font-size: 11px;
+    color: #555;
+}
+
+.asguide1 {
+    position: absolute;
+    top: 37.5px;
+    left: 775px;
+    white-space: nowrap;
+    font-size: 11px;
+    color: #555;
+}
+
+.asguide2 {
+    position: absolute;
+    top: 82.5px;
+    left: 775px;
+    white-space: nowrap;
+    font-size: 11px;
+    color: #555;
+}
+
+.asguide3 {
+    position: absolute;
+    top: 125px;
+    left: 775px;
+    white-space: nowrap;
+    font-size: 11px;
+    color: #555;
+}
+
+.asguide4 {
+    position: absolute;
+    top: 170px;
+    left: 775px;
+    white-space: nowrap;
+    font-size: 11px;
+    color: #555;
+}
+
+.asbutton {
+    position: absolute;
+    top: 225px;
+    left: 637px;
+    width: 120px;
+    height: 30px;
+    background-color: #4d90fe;
+    border: 1px solid #3079ed;
+    color: #fff;
+    box-shadow: none;
+    border-radius: 2px;
+    font-size: 11px;
+    font-weight: bold;
+    text-align: center;
+    white-space: nowrap;
+}

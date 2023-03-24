@@ -1,0 +1,127 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>{% block title %}Social Network{% endblock %}</title>
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+        <link href="{% static 'network/styles.css' %}" rel="stylesheet">
+    </head>
+    <body>
+
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <a class="navbar-brand" href="{% url 'index'%}">Network</a>
+          
+            <div>
+              <ul class="navbar-nav mr-auto">
+                {% if user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'profile' request.user.username%}"><strong>{{ request.user.username }}</strong></a>
+                    </li>
+                {% endif %}
+                <li class="nav-item">
+                  <a class="nav-link" href="{% url 'index' %}">All Posts</a>
+                </li>
+                {% if user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'following' %}">Following</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'logout' %}">Log Out</a>
+                    </li>
+                {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'login' %}">Log In</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'register' %}">Register</a>
+                    </li>
+                {% endif %}
+              </ul>
+            </div>
+          </nav>
+        
+        <div class="body">
+            {% block body %}
+            {% endblock %}
+        </div>
+    </body>
+    <script>
+        edit = document.querySelectorAll(".edit");
+        like = document.querySelectorAll(".liked");
+
+        edit.forEach((element) => {
+            element.addEventListener("click", () => {
+                edit_fn(element);
+            });
+        });
+        
+        like.forEach((element) => {
+            like_fn(element);
+        });
+
+        function like_fn(element) {
+            element.addEventListener("click", () => {
+                id = element.getAttribute("data-id");
+                liked = element.getAttribute("data-liked");
+                icon = document.getElementById(`post-like-${id}`);
+                count = document.getElementById(`post-count-${id}`);
+
+                form = new FormData();
+                form.append("id", id);
+                form.append("liked", liked);
+
+                fetch("/like", {
+                    method: "POST",
+                    body: form,
+                })
+                .then((result) => result.json())
+                .then((result) => {
+                    if (result.status == 201) {
+                        if (result.liked === "yes") {
+                            icon.src = "https://www.pikpng.com/pngl/m/382-3823370_heart-icon-transparent-background-heart-png-clipart.png";
+                            element.setAttribute("data-liked", "yes");
+                        } else {
+                            icon.src =
+                            "https://www.seekpng.com/png/detail/55-552216_how-to-set-use-white-heart-with-black.png";
+                            element.setAttribute("data-liked", "no");
+                        }
+                        count.textContent = result.likes;
+                    }
+                })
+            });
+        }
+
+        function edit_fn(element) {
+            id = element.getAttribute("data-id");
+            edit_btn = document.getElementById(`edit-btn-${id}`);
+            if (edit_btn.textContent == "Edit") {
+                document.getElementById(`post-content-${id}`).style.display = "none";
+                document.getElementById(`post-edit-${id}`).style.display = "block";
+                edit_btn.textContent = "Confirm changes";
+            } else if (edit_btn.textContent == "Confirm changes") {
+                edit_post(id, document.getElementById(`post-edit-${id}`).value);
+                edit_btn.textContent = "Edit";
+                edit_btn.setAttribute("class", "text-primary edit");
+            }
+        }
+
+        function edit_post(id, post) {
+            form = new FormData();
+            form.append("id", id);
+            form.append("post", post.trim());
+
+            fetch("/post/edit", {
+                method: "POST",
+                body: form,
+            }).then((result) => {
+                document.getElementById(`post-content-${id}`).textContent = post;
+                document.getElementById(`post-content-${id}`).style.display = "block";
+                document.getElementById(`post-edit-${id}`).style.display = "none";
+                document.getElementById(`post-edit-${id}`).value = post.trim();
+            });
+        }
+    </script>
+    {% block script %} 
+    {% endblock %}
+</html>

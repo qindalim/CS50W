@@ -1,0 +1,214 @@
+{% extends "crypto/layout.html" %} 
+
+{% load static %}
+
+{% block body %}
+
+<h1>Add Coins</h1>
+
+<div class ="container">
+  <form>
+    <div class="formli">            
+      <label for="coin">Coin Name: </label>
+      <input type="text" id="coin" required="" placeholder="Eg. Bitcoin"> <br><br>              
+      <label for="ticker">Ticker: </label>
+      <input type="text" id="ticker" required="" placeholder="Eg. BTC/USDT"><br><br>               
+      <label for="buy_price">Buy Price: </label>
+      <input type="number" id="buy_price" required ="" placeholder="Eg. 60000" step=".01"><br><br>
+      <label for="buy_quantity">Buy Quantity: </label>
+      <input type="number" id="buy_quantity" required ="" placeholder="Eg. 5"><br><br>
+
+      <div class="save">
+          <button id="saveButton" type="submit">Save</button>
+      </div>
+    </div>
+  </form> 
+</div>
+
+<h1>Current Portfolio</h1>    
+
+<table id="table" class="auto-index">
+    <tr>  
+      <th>ID</th>
+      <th>Coin</th>
+      <th>Ticker</th>
+      <th>Buy Price</th>
+      <th>Buy Quantity</th>
+      <th>Current Price</th>
+      <th>Rounded Profit/Loss</th>
+      <th>Options</th>
+    </tr>
+    {% for coin in coins %}
+      {% if request.user == coin.user %}
+        <tr>
+          <th>{{ coin.id }}</th>
+          <th>{{ coin.name }}</th>
+          <th id="ticker">{{ coin.ticker }}</th>
+          <th id="buy_price">{{ coin.buy_price }}</th>
+          <th id="buy_quantity">{{ coin.buy_quantity }}</th>
+          <th class="currentPrice" data-id="{{coin.id}}" data-ticker="{{coin.ticker}}">Fetching current price...</th>
+          <th class="profit" data-id="{{coin.id}}" data-buy-quantity="{{coin.buy_quantity}}" data-buy-price="{{coin.buy_price}}">Calculating profit...</th>
+          <th><button class="delete" id="deleteButton-{{coin.id}}" data-id="{{coin.id}}">Delete</button></th>
+        </tr>
+      {% endif %}
+    {% endfor %}
+</table>
+
+<h2 id="totalProfit">Calculating Total Profit...</h2> 
+
+{% endblock %}
+
+{% block script %} 
+
+<script>
+// Save Function
+saveButton = document.getElementById("saveButton");
+saveButton.addEventListener("click", () => {
+  const coin = document.getElementById("coin").value;
+  const ticker = document.getElementById("ticker").value;
+  const buy_price = document.getElementById("buy_price").value;
+  const buy_quantity = document.getElementById("buy_quantity").value;
+
+  let re = /\//g
+  let re2 = /</g
+
+  let result = re.exec(ticker)
+  let result2 = !re2.exec(coin)
+  let result3 = !re2.exec (ticker)
+
+  if (result && result2 && result3) {
+    if (!(coin == "" || ticker == "" || buy_price == "" || buy_quantity == "")) {
+      fetch("/add", {
+        method: "POST",
+        body: JSON.stringify({
+          coin: coin,
+          ticker: ticker,
+          buy_price: buy_price,
+          buy_quantity: buy_quantity
+        }),
+      })
+      .then((response) => response.json())
+      .then((result) => {
+        console.log(result);
+      })
+    }
+    else alert("You have some empty values. Please fill in all the fields.")
+  } 
+  else alert("Invalid ticker or coin. Please try again.")
+  return false;
+});
+
+// Delete Function
+deleteAll = document.querySelectorAll(".delete");
+deleteAll.forEach((element) => {
+  element.addEventListener("click", () => {
+    delete_fn(element);
+  })
+});
+
+function delete_fn(element) {
+  id = element.getAttribute("data-id")
+
+  let confirmation = confirm("are you sure you want to remove the item?");
+  if (confirmation) {
+    fetch(`/delete/${id}`)
+  };
+
+  window.location.reload();
+} 
+
+// Load Prices
+currentPriceAll = document.querySelectorAll(".currentPrice");
+profitAll = document.querySelectorAll(".profit");
+totalProfitMain = document.getElementById("totalProfit");
+allPrices = {}
+allProfit = {}
+totalProfit = 0
+
+currentPriceAll.forEach(async (element) => {
+  let coin_id = element.getAttribute("data-id")
+  let ticker = element.getAttribute("data-ticker")
+  let binance = new ccxt.binance()
+  let x = await binance.fetch_ohlcv(ticker, "5m")
+  element.innerHTML = "$" + x[499][4]
+  allPrices[coin_id] = x[499][4]
+})
+
+profitAll.forEach((element) => {
+    setTimeout(function() {
+      let coin_id = element.getAttribute("data-id")
+      let buy_quantity = element.getAttribute("data-buy-quantity")
+      let buy_price = element.getAttribute("data-buy-price")
+      let y = Math.round(buy_quantity * (-parseFloat(buy_price) + parseFloat(allPrices[coin_id])))
+      element.innerHTML = "$" + y
+      if (y >= 0) {
+          element.style.color = "green"
+      } else {
+          element.style.color = "red"
+      }
+      allProfit[coin_id] = y
+    }, 2000)
+  })
+
+setTimeout(function() {
+  const sumValues = obj => Object.values(obj).reduce((a, b) => a + b);
+  totalProfit = sumValues(allProfit)
+  console.log(totalProfit)
+  totalProfitMain.innerHTML = "Total Profit: $" + Math.round(totalProfit)
+  if (totalProfit >= 0) {
+    totalProfitMain.style.color = "green"
+  } else {
+    totalProfitMain.style.color = "red"
+  }
+}, 2000)
+</script>
+
+{% endblock %}
+
+{% block css %}
+
+<style scoped>
+.formli {
+display: inline-block;
+text-align: right;
+}
+
+form {
+  text-align: center;
+  align-items: center;
+  margin: auto;
+}
+
+input {
+  margin-left: 10px;
+}
+
+input:hover {
+  box-shadow: 3px 3px lightgreen;
+  border-radius: 2px
+}
+
+.save {
+text-align: center ;
+}
+
+table {
+  font-family: arial, sans-serif;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+th, td {
+  border: 1px solid #dddddd;
+  text-align: center;
+  padding: 8px;
+}
+
+.bwt {
+    color:rgb(243, 236, 236);
+    background-color: rgb(255, 94, 0);
+}
+</style>
+
+{% endblock %}
+

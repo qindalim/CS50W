@@ -1,0 +1,56 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Crypto Portfolio{% endblock %}</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+</head>
+<body>
+    <div style="text-align: center; background-color: lightgray; margin-top: -20px;">
+        <h1>Crypto Portfolio</h1>
+        {% if user.is_authenticated %}
+            Signed in as <strong>{{ user.username }}</strong>
+            <br><br>
+            <div>
+                <a href="{% url 'index' %}">Home</a> |
+                <a href="{% url 'about' %}">About</a> |
+                <a href="{% url 'profit' %}">Profits</a>  |    
+                <a href="{% url 'profile' %}">Profile</a> |
+                <a href="{% url 'logout' %}">Log Out</a>         
+            </div>
+        {% else %}
+            Not signed in.
+        {% endif %}
+    </div>
+    {% block body %}
+    {% endblock %}
+</body>
+
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/ccxt@1.61.40/dist/ccxt.browser.js"></script>
+
+{% block script %} 
+{% endblock %}
+
+<style>
+    h1, h2 {
+        text-align: center;
+        background-color: lightgrey;
+        font: 700;
+        display: block;
+        font-size: 2em;
+        margin-block-start: 0.67em;
+        margin-block-end: 0.67em;
+        margin-inline-start: 0px;
+        margin-inline-end: 0px;
+        font-weight: bold;
+    }
+</style>
+
+{% block css %}
+{% endblock %}
+
+</html>
